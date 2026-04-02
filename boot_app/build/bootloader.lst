@@ -1,4 +1,4 @@
-ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 1
+ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\cc63py71.s 			page 1
 
 
    1              		.cpu cortex-m4
@@ -20,54 +20,198 @@ ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 1
   17              	.Ltext0:
   18              		.cfi_sections	.debug_frame
   19              		.file 1 "Core/Src/bootloader.c"
-  20              		.section	.text.jump_to_app,"ax",%progbits
+  20              		.section	.text.is_button_pressed,"ax",%progbits
   21              		.align	1
-  22              		.global	jump_to_app
+  22              		.global	is_button_pressed
   23              		.syntax unified
   24              		.thumb
   25              		.thumb_func
-  27              	jump_to_app:
+  27              	is_button_pressed:
   28              	.LFB134:
    1:Core/Src/bootloader.c **** 
-   2:Core/Src/bootloader.c **** 
-   3:Core/Src/bootloader.c **** #include "bootloader.h"
-   4:Core/Src/bootloader.c **** #include "stm32f4xx.h"
-   5:Core/Src/bootloader.c **** #include <stdint.h>
-   6:Core/Src/bootloader.c **** 
-   7:Core/Src/bootloader.c **** #define APP_ADDRESS 0x08004000
-   8:Core/Src/bootloader.c **** 
-   9:Core/Src/bootloader.c **** void jump_to_app(void)
-  10:Core/Src/bootloader.c **** {
-  29              		.loc 1 10 1 view -0
+   2:Core/Src/bootloader.c **** #include "bootloader.h"
+   3:Core/Src/bootloader.c **** #include "stm32f4xx.h"
+   4:Core/Src/bootloader.c **** #include <stdint.h>
+   5:Core/Src/bootloader.c **** 
+   6:Core/Src/bootloader.c **** #define APP_ADDRESS 0x08004000
+   7:Core/Src/bootloader.c **** 
+   8:Core/Src/bootloader.c **** #include "stm32f4xx_hal.h"
+   9:Core/Src/bootloader.c **** 
+  10:Core/Src/bootloader.c **** #define BUTTON_PORT GPIOA
+  11:Core/Src/bootloader.c **** #define BUTTON_PIN  GPIO_PIN_0
+  12:Core/Src/bootloader.c **** 
+  13:Core/Src/bootloader.c **** uint8_t is_button_pressed(void)
+  14:Core/Src/bootloader.c **** {
+  29              		.loc 1 14 1 view -0
   30              		.cfi_startproc
   31              		@ args = 0, pretend = 0, frame = 0
   32              		@ frame_needed = 0, uses_anonymous_args = 0
-  33 0000 08B5     		push	{r3, lr}
+  33 0000 10B5     		push	{r4, lr}
   34              	.LCFI0:
   35              		.cfi_def_cfa_offset 8
-  36              		.cfi_offset 3, -8
+  36              		.cfi_offset 4, -8
   37              		.cfi_offset 14, -4
-  11:Core/Src/bootloader.c ****     uint32_t appStack = *(volatile uint32_t*)APP_ADDRESS;
-  38              		.loc 1 11 5 view .LVU1
-  39              		.loc 1 11 14 is_stmt 0 view .LVU2
-  40 0002 044B     		ldr	r3, .L3
-  41 0004 1A68     		ldr	r2, [r3]
-  42              	.LVL0:
-  12:Core/Src/bootloader.c ****     uint32_t appReset = *(volatile uint32_t*)(APP_ADDRESS + 4);
-  43              		.loc 1 12 5 is_stmt 1 view .LVU3
-  44              		.loc 1 12 14 is_stmt 0 view .LVU4
-  45 0006 5B68     		ldr	r3, [r3, #4]
-  46              	.LVL1:
-ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 2
+  15:Core/Src/bootloader.c ****     // Button pressed = LOW (because pull-up)
+  16:Core/Src/bootloader.c ****     HAL_Delay(2000);
+  38              		.loc 1 16 5 view .LVU1
+  39 0002 4FF4FA60 		mov	r0, #2000
+  40 0006 FFF7FEFF 		bl	HAL_Delay
+  41              	.LVL0:
+  17:Core/Src/bootloader.c ****     if (HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN) == GPIO_PIN_RESET)
+ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\cc63py71.s 			page 2
 
 
-  13:Core/Src/bootloader.c **** 
-  14:Core/Src/bootloader.c ****     // Disable interrupts
-  15:Core/Src/bootloader.c ****     __disable_irq();
-  47              		.loc 1 15 5 is_stmt 1 view .LVU5
-  48              	.LBB6:
-  49              	.LBI6:
-  50              		.file 2 "Drivers/CMSIS/Include/cmsis_gcc.h"
+  42              		.loc 1 17 5 view .LVU2
+  43              		.loc 1 17 9 is_stmt 0 view .LVU3
+  44 000a 0121     		movs	r1, #1
+  45 000c 0A48     		ldr	r0, .L7
+  46 000e FFF7FEFF 		bl	HAL_GPIO_ReadPin
+  47              	.LVL1:
+  48              		.loc 1 17 8 discriminator 1 view .LVU4
+  49 0012 18B1     		cbz	r0, .L6
+  18:Core/Src/bootloader.c ****     {
+  19:Core/Src/bootloader.c ****         HAL_Delay(100); // debounce
+  20:Core/Src/bootloader.c **** 
+  21:Core/Src/bootloader.c ****         if (HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN) == GPIO_PIN_RESET)
+  22:Core/Src/bootloader.c ****         {
+  23:Core/Src/bootloader.c ****             return 1;
+  24:Core/Src/bootloader.c ****         }
+  25:Core/Src/bootloader.c ****     }
+  26:Core/Src/bootloader.c ****     return 0;
+  50              		.loc 1 26 12 view .LVU5
+  51 0014 0023     		movs	r3, #0
+  52 0016 1C46     		mov	r4, r3
+  53              	.L2:
+  27:Core/Src/bootloader.c **** }
+  54              		.loc 1 27 1 view .LVU6
+  55 0018 2046     		mov	r0, r4
+  56 001a 10BD     		pop	{r4, pc}
+  57              	.L6:
+  58 001c 0446     		mov	r4, r0
+  19:Core/Src/bootloader.c **** 
+  59              		.loc 1 19 9 is_stmt 1 view .LVU7
+  60 001e 6420     		movs	r0, #100
+  61 0020 FFF7FEFF 		bl	HAL_Delay
+  62              	.LVL2:
+  21:Core/Src/bootloader.c ****         {
+  63              		.loc 1 21 9 view .LVU8
+  21:Core/Src/bootloader.c ****         {
+  64              		.loc 1 21 13 is_stmt 0 view .LVU9
+  65 0024 0121     		movs	r1, #1
+  66 0026 0448     		ldr	r0, .L7
+  67 0028 FFF7FEFF 		bl	HAL_GPIO_ReadPin
+  68              	.LVL3:
+  21:Core/Src/bootloader.c ****         {
+  69              		.loc 1 21 12 discriminator 1 view .LVU10
+  70 002c 0028     		cmp	r0, #0
+  71 002e F3D1     		bne	.L2
+  23:Core/Src/bootloader.c ****         }
+  72              		.loc 1 23 20 view .LVU11
+  73 0030 0123     		movs	r3, #1
+  74 0032 1C46     		mov	r4, r3
+  75 0034 F0E7     		b	.L2
+  76              	.L8:
+  77 0036 00BF     		.align	2
+  78              	.L7:
+  79 0038 00000240 		.word	1073872896
+  80              		.cfi_endproc
+  81              	.LFE134:
+  83              		.section	.text.is_app_valid,"ax",%progbits
+  84              		.align	1
+ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\cc63py71.s 			page 3
+
+
+  85              		.global	is_app_valid
+  86              		.syntax unified
+  87              		.thumb
+  88              		.thumb_func
+  90              	is_app_valid:
+  91              	.LFB135:
+  28:Core/Src/bootloader.c **** uint8_t is_app_valid(void)
+  29:Core/Src/bootloader.c **** {
+  92              		.loc 1 29 1 is_stmt 1 view -0
+  93              		.cfi_startproc
+  94              		@ args = 0, pretend = 0, frame = 0
+  95              		@ frame_needed = 0, uses_anonymous_args = 0
+  96              		@ link register save eliminated.
+  30:Core/Src/bootloader.c ****     uint32_t sp = *(volatile uint32_t*)APP_ADDRESS;
+  97              		.loc 1 30 5 view .LVU13
+  98              		.loc 1 30 14 is_stmt 0 view .LVU14
+  99 0000 054B     		ldr	r3, .L12
+ 100 0002 1B68     		ldr	r3, [r3]
+ 101              	.LVL4:
+  31:Core/Src/bootloader.c **** 
+  32:Core/Src/bootloader.c ****     // SRAM range check
+  33:Core/Src/bootloader.c ****     if ((sp >= 0x20000000) && (sp <= 0x20010000))
+ 102              		.loc 1 33 5 is_stmt 1 view .LVU15
+ 103              		.loc 1 33 28 is_stmt 0 view .LVU16
+ 104 0004 03F16043 		add	r3, r3, #-536870912
+ 105              	.LVL5:
+ 106              		.loc 1 33 8 view .LVU17
+ 107 0008 B3F5803F 		cmp	r3, #65536
+ 108 000c 01D9     		bls	.L11
+  34:Core/Src/bootloader.c ****         return 1;
+  35:Core/Src/bootloader.c **** 
+  36:Core/Src/bootloader.c ****     return 0;
+ 109              		.loc 1 36 12 view .LVU18
+ 110 000e 0020     		movs	r0, #0
+ 111 0010 7047     		bx	lr
+ 112              	.L11:
+  34:Core/Src/bootloader.c ****         return 1;
+ 113              		.loc 1 34 16 view .LVU19
+ 114 0012 0120     		movs	r0, #1
+  37:Core/Src/bootloader.c **** }
+ 115              		.loc 1 37 1 view .LVU20
+ 116 0014 7047     		bx	lr
+ 117              	.L13:
+ 118 0016 00BF     		.align	2
+ 119              	.L12:
+ 120 0018 00400008 		.word	134234112
+ 121              		.cfi_endproc
+ 122              	.LFE135:
+ 124              		.section	.text.jump_to_app,"ax",%progbits
+ 125              		.align	1
+ 126              		.global	jump_to_app
+ 127              		.syntax unified
+ 128              		.thumb
+ 129              		.thumb_func
+ 131              	jump_to_app:
+ 132              	.LFB136:
+  38:Core/Src/bootloader.c **** 
+ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\cc63py71.s 			page 4
+
+
+  39:Core/Src/bootloader.c **** void jump_to_app(void)
+  40:Core/Src/bootloader.c **** {
+ 133              		.loc 1 40 1 is_stmt 1 view -0
+ 134              		.cfi_startproc
+ 135              		@ args = 0, pretend = 0, frame = 0
+ 136              		@ frame_needed = 0, uses_anonymous_args = 0
+ 137 0000 70B5     		push	{r4, r5, r6, lr}
+ 138              	.LCFI1:
+ 139              		.cfi_def_cfa_offset 16
+ 140              		.cfi_offset 4, -16
+ 141              		.cfi_offset 5, -12
+ 142              		.cfi_offset 6, -8
+ 143              		.cfi_offset 14, -4
+  41:Core/Src/bootloader.c ****     uint32_t appStack = *(volatile uint32_t*)APP_ADDRESS;
+ 144              		.loc 1 41 5 view .LVU22
+ 145              		.loc 1 41 14 is_stmt 0 view .LVU23
+ 146 0002 074D     		ldr	r5, .L16
+ 147 0004 2E68     		ldr	r6, [r5]
+ 148              	.LVL6:
+  42:Core/Src/bootloader.c ****     uint32_t appReset = *(volatile uint32_t*)(APP_ADDRESS + 4);
+ 149              		.loc 1 42 5 is_stmt 1 view .LVU24
+ 150              		.loc 1 42 14 is_stmt 0 view .LVU25
+ 151 0006 6C68     		ldr	r4, [r5, #4]
+ 152              	.LVL7:
+  43:Core/Src/bootloader.c **** 
+  44:Core/Src/bootloader.c ****     // Disable interrupts
+  45:Core/Src/bootloader.c ****     __disable_irq();
+ 153              		.loc 1 45 5 is_stmt 1 view .LVU26
+ 154              	.LBB6:
+ 155              	.LBI6:
+ 156              		.file 2 "Drivers/CMSIS/Include/cmsis_gcc.h"
    1:Drivers/CMSIS/Include/cmsis_gcc.h **** /**************************************************************************//**
    2:Drivers/CMSIS/Include/cmsis_gcc.h ****  * @file     cmsis_gcc.h
    3:Drivers/CMSIS/Include/cmsis_gcc.h ****  * @brief    CMSIS compiler GCC header file
@@ -94,6 +238,9 @@ ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 1
   24:Drivers/CMSIS/Include/cmsis_gcc.h **** 
   25:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef __CMSIS_GCC_H
   26:Drivers/CMSIS/Include/cmsis_gcc.h **** #define __CMSIS_GCC_H
+ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\cc63py71.s 			page 5
+
+
   27:Drivers/CMSIS/Include/cmsis_gcc.h **** 
   28:Drivers/CMSIS/Include/cmsis_gcc.h **** /* ignore some GCC warnings */
   29:Drivers/CMSIS/Include/cmsis_gcc.h **** #pragma GCC diagnostic push
@@ -118,9 +265,6 @@ ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 1
   48:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
   49:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __STATIC_FORCEINLINE
   50:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __STATIC_FORCEINLINE                   __attribute__((always_inline)) static inline
-ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 3
-
-
   51:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
   52:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __NO_RETURN
   53:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __NO_RETURN                            __attribute__((__noreturn__))
@@ -154,6 +298,9 @@ ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 1
   81:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
   82:Drivers/CMSIS/Include/cmsis_gcc.h ****   __PACKED_STRUCT T_UINT16_WRITE { uint16_t v; };
   83:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\cc63py71.s 			page 6
+
+
   84:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT16_WRITE(addr, val)    (void)((((struct T_UINT16_WRITE *)(void *)(addr))-
   85:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
   86:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT16_READ
@@ -178,9 +325,6 @@ ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 1
  105:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
  106:Drivers/CMSIS/Include/cmsis_gcc.h ****   __PACKED_STRUCT T_UINT32_READ { uint32_t v; };
  107:Drivers/CMSIS/Include/cmsis_gcc.h ****   #pragma GCC diagnostic pop
-ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 4
-
-
  108:Drivers/CMSIS/Include/cmsis_gcc.h ****   #define __UNALIGNED_UINT32_READ(addr)          (((const struct T_UINT32_READ *)(const void *)(add
  109:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
  110:Drivers/CMSIS/Include/cmsis_gcc.h **** #ifndef   __ALIGNED
@@ -214,6 +358,9 @@ ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 1
  138:Drivers/CMSIS/Include/cmsis_gcc.h ****     uint32_t  wlen;
  139:Drivers/CMSIS/Include/cmsis_gcc.h ****   } __copy_table_t;
  140:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\cc63py71.s 			page 7
+
+
  141:Drivers/CMSIS/Include/cmsis_gcc.h ****   typedef struct {
  142:Drivers/CMSIS/Include/cmsis_gcc.h ****     uint32_t* dest;
  143:Drivers/CMSIS/Include/cmsis_gcc.h ****     uint32_t  wlen;
@@ -238,9 +385,6 @@ ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 1
  162:Drivers/CMSIS/Include/cmsis_gcc.h **** 
  163:Drivers/CMSIS/Include/cmsis_gcc.h ****   _start();
  164:Drivers/CMSIS/Include/cmsis_gcc.h **** }
-ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 5
-
-
  165:Drivers/CMSIS/Include/cmsis_gcc.h **** 
  166:Drivers/CMSIS/Include/cmsis_gcc.h **** #define __PROGRAM_START           __cmsis_start
  167:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
@@ -274,6 +418,9 @@ ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 1
  195:Drivers/CMSIS/Include/cmsis_gcc.h **** #define __TZ_STACK_SEAL_VALUE     0xFEF5EDA5FEF5EDA5ULL
  196:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
  197:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\cc63py71.s 			page 8
+
+
  198:Drivers/CMSIS/Include/cmsis_gcc.h **** 
  199:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __TZ_set_STACKSEAL_S (uint32_t* stackTop) {
  200:Drivers/CMSIS/Include/cmsis_gcc.h ****   *((uint64_t *)stackTop) = __TZ_STACK_SEAL_VALUE;
@@ -298,9 +445,6 @@ ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 1
  219:Drivers/CMSIS/Include/cmsis_gcc.h **** #define __CMSIS_GCC_OUT_REG(r) "=r" (r)
  220:Drivers/CMSIS/Include/cmsis_gcc.h **** #define __CMSIS_GCC_RW_REG(r) "+r" (r)
  221:Drivers/CMSIS/Include/cmsis_gcc.h **** #define __CMSIS_GCC_USE_REG(r) "r" (r)
-ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 6
-
-
  222:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
  223:Drivers/CMSIS/Include/cmsis_gcc.h **** 
  224:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
@@ -334,6 +478,9 @@ ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 1
  252:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
  253:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Instruction Synchronization Barrier
  254:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Instruction Synchronization Barrier flushes the pipeline in the processor,
+ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\cc63py71.s 			page 9
+
+
  255:Drivers/CMSIS/Include/cmsis_gcc.h ****            so that all instructions following the ISB are fetched from cache or memory,
  256:Drivers/CMSIS/Include/cmsis_gcc.h ****            after the instruction has been completed.
  257:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
@@ -358,9 +505,6 @@ ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 1
  276:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Data Memory Barrier
  277:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Ensures the apparent order of the explicit memory operations before
  278:Drivers/CMSIS/Include/cmsis_gcc.h ****            and after the instruction, without ensuring their completion.
-ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 7
-
-
  279:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
  280:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __DMB(void)
  281:Drivers/CMSIS/Include/cmsis_gcc.h **** {
@@ -394,6 +538,9 @@ ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 1
  309:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return               Reversed value
  310:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
  311:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE uint32_t __REV16(uint32_t value)
+ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\cc63py71.s 			page 10
+
+
  312:Drivers/CMSIS/Include/cmsis_gcc.h **** {
  313:Drivers/CMSIS/Include/cmsis_gcc.h ****   uint32_t result;
  314:Drivers/CMSIS/Include/cmsis_gcc.h **** 
@@ -418,9 +565,6 @@ ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 1
  333:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM ("revsh %0, %1" : __CMSIS_GCC_OUT_REG (result) : __CMSIS_GCC_USE_REG (value) );
  334:Drivers/CMSIS/Include/cmsis_gcc.h ****   return result;
  335:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
-ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 8
-
-
  336:Drivers/CMSIS/Include/cmsis_gcc.h **** }
  337:Drivers/CMSIS/Include/cmsis_gcc.h **** 
  338:Drivers/CMSIS/Include/cmsis_gcc.h **** 
@@ -454,6 +598,9 @@ ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 1
  366:Drivers/CMSIS/Include/cmsis_gcc.h **** 
  367:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
  368:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Reverse bit order of value
+ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\cc63py71.s 			page 11
+
+
  369:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Reverses the bit order of the given value.
  370:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    value  Value to reverse
  371:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return               Reversed value
@@ -478,9 +625,6 @@ ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 1
  390:Drivers/CMSIS/Include/cmsis_gcc.h ****   }
  391:Drivers/CMSIS/Include/cmsis_gcc.h ****   result <<= s;                        /* shift when v's highest bits are zero */
  392:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
-ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 9
-
-
  393:Drivers/CMSIS/Include/cmsis_gcc.h ****   return result;
  394:Drivers/CMSIS/Include/cmsis_gcc.h **** }
  395:Drivers/CMSIS/Include/cmsis_gcc.h **** 
@@ -514,6 +658,9 @@ ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 1
  423:Drivers/CMSIS/Include/cmsis_gcc.h ****      (defined (__ARM_ARCH_7EM__     ) && (__ARM_ARCH_7EM__     == 1)) || \
  424:Drivers/CMSIS/Include/cmsis_gcc.h ****      (defined (__ARM_ARCH_8M_MAIN__ ) && (__ARM_ARCH_8M_MAIN__ == 1)) || \
  425:Drivers/CMSIS/Include/cmsis_gcc.h ****      (defined (__ARM_ARCH_8M_BASE__ ) && (__ARM_ARCH_8M_BASE__ == 1))    )
+ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\cc63py71.s 			page 12
+
+
  426:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
  427:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   LDR Exclusive (8 bit)
  428:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Executes a exclusive LDR instruction for 8 bit value.
@@ -538,9 +685,6 @@ ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 1
  447:Drivers/CMSIS/Include/cmsis_gcc.h **** 
  448:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
  449:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   LDR Exclusive (16 bit)
-ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 10
-
-
  450:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Executes a exclusive LDR instruction for 16 bit values.
  451:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    ptr  Pointer to data
  452:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return        value of type uint16_t at (*ptr)
@@ -574,6 +718,9 @@ ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 1
  480:Drivers/CMSIS/Include/cmsis_gcc.h ****    __ASM volatile ("ldrex %0, %1" : "=r" (result) : "Q" (*addr) );
  481:Drivers/CMSIS/Include/cmsis_gcc.h ****    return(result);
  482:Drivers/CMSIS/Include/cmsis_gcc.h **** }
+ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\cc63py71.s 			page 13
+
+
  483:Drivers/CMSIS/Include/cmsis_gcc.h **** 
  484:Drivers/CMSIS/Include/cmsis_gcc.h **** 
  485:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
@@ -598,9 +745,6 @@ ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 1
  504:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Executes a exclusive STR instruction for 16 bit values.
  505:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]  value  Value to store
  506:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    ptr  Pointer to location
-ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 11
-
-
  507:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return          0  Function succeeded
  508:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return          1  Function failed
  509:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
@@ -634,6 +778,9 @@ ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 1
  537:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Remove the exclusive lock
  538:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Removes the exclusive lock which is created by LDREX.
  539:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\cc63py71.s 			page 14
+
+
  540:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __CLREX(void)
  541:Drivers/CMSIS/Include/cmsis_gcc.h **** {
  542:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("clrex" ::: "memory");
@@ -658,9 +805,6 @@ ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 1
  561:Drivers/CMSIS/Include/cmsis_gcc.h **** #define __SSAT(ARG1, ARG2) \
  562:Drivers/CMSIS/Include/cmsis_gcc.h **** __extension__ \
  563:Drivers/CMSIS/Include/cmsis_gcc.h **** ({                          \
-ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 12
-
-
  564:Drivers/CMSIS/Include/cmsis_gcc.h ****   int32_t __RES, __ARG1 = (ARG1); \
  565:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("ssat %0, %1, %2" : "=r" (__RES) :  "I" (ARG2), "r" (__ARG1) : "cc" ); \
  566:Drivers/CMSIS/Include/cmsis_gcc.h ****   __RES; \
@@ -694,6 +838,9 @@ ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 1
  594:Drivers/CMSIS/Include/cmsis_gcc.h **** {
  595:Drivers/CMSIS/Include/cmsis_gcc.h ****   uint32_t result;
  596:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\cc63py71.s 			page 15
+
+
  597:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("rrx %0, %1" : __CMSIS_GCC_OUT_REG (result) : __CMSIS_GCC_USE_REG (value) );
  598:Drivers/CMSIS/Include/cmsis_gcc.h ****   return(result);
  599:Drivers/CMSIS/Include/cmsis_gcc.h **** }
@@ -718,9 +865,6 @@ ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 1
  618:Drivers/CMSIS/Include/cmsis_gcc.h ****    __ASM volatile ("ldrbt %0, [%1]" : "=r" (result) : "r" (ptr) : "memory" );
  619:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
  620:Drivers/CMSIS/Include/cmsis_gcc.h ****    return ((uint8_t) result);    /* Add explicit type cast here */
-ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 13
-
-
  621:Drivers/CMSIS/Include/cmsis_gcc.h **** }
  622:Drivers/CMSIS/Include/cmsis_gcc.h **** 
  623:Drivers/CMSIS/Include/cmsis_gcc.h **** 
@@ -754,6 +898,9 @@ ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 1
  651:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
  652:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE uint32_t __LDRT(volatile uint32_t *ptr)
  653:Drivers/CMSIS/Include/cmsis_gcc.h **** {
+ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\cc63py71.s 			page 16
+
+
  654:Drivers/CMSIS/Include/cmsis_gcc.h ****     uint32_t result;
  655:Drivers/CMSIS/Include/cmsis_gcc.h **** 
  656:Drivers/CMSIS/Include/cmsis_gcc.h ****    __ASM volatile ("ldrt %0, %1" : "=r" (result) : "Q" (*ptr) );
@@ -778,9 +925,6 @@ ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 1
  675:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Executes a Unprivileged STRT instruction for 16 bit values.
  676:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]  value  Value to store
  677:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    ptr  Pointer to location
-ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 14
-
-
  678:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
  679:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __STRHT(uint16_t value, volatile uint16_t *ptr)
  680:Drivers/CMSIS/Include/cmsis_gcc.h **** {
@@ -814,6 +958,9 @@ ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 1
  708:Drivers/CMSIS/Include/cmsis_gcc.h **** {
  709:Drivers/CMSIS/Include/cmsis_gcc.h ****   if ((sat >= 1U) && (sat <= 32U))
  710:Drivers/CMSIS/Include/cmsis_gcc.h ****   {
+ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\cc63py71.s 			page 17
+
+
  711:Drivers/CMSIS/Include/cmsis_gcc.h ****     const int32_t max = (int32_t)((1U << (sat - 1U)) - 1U);
  712:Drivers/CMSIS/Include/cmsis_gcc.h ****     const int32_t min = -1 - max ;
  713:Drivers/CMSIS/Include/cmsis_gcc.h ****     if (val > max)
@@ -838,9 +985,6 @@ ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 1
  732:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE uint32_t __USAT(int32_t val, uint32_t sat)
  733:Drivers/CMSIS/Include/cmsis_gcc.h **** {
  734:Drivers/CMSIS/Include/cmsis_gcc.h ****   if (sat <= 31U)
-ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 15
-
-
  735:Drivers/CMSIS/Include/cmsis_gcc.h ****   {
  736:Drivers/CMSIS/Include/cmsis_gcc.h ****     const uint32_t max = ((1U << sat) - 1U);
  737:Drivers/CMSIS/Include/cmsis_gcc.h ****     if (val > (int32_t)max)
@@ -874,6 +1018,9 @@ ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 1
  765:Drivers/CMSIS/Include/cmsis_gcc.h **** 
  766:Drivers/CMSIS/Include/cmsis_gcc.h ****    __ASM volatile ("ldab %0, %1" : "=r" (result) : "Q" (*ptr) : "memory" );
  767:Drivers/CMSIS/Include/cmsis_gcc.h ****    return ((uint8_t) result);
+ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\cc63py71.s 			page 18
+
+
  768:Drivers/CMSIS/Include/cmsis_gcc.h **** }
  769:Drivers/CMSIS/Include/cmsis_gcc.h **** 
  770:Drivers/CMSIS/Include/cmsis_gcc.h **** 
@@ -898,9 +1045,6 @@ ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 1
  789:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    ptr  Pointer to data
  790:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return        value of type uint32_t at (*ptr)
  791:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
-ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 16
-
-
  792:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE uint32_t __LDA(volatile uint32_t *ptr)
  793:Drivers/CMSIS/Include/cmsis_gcc.h **** {
  794:Drivers/CMSIS/Include/cmsis_gcc.h ****     uint32_t result;
@@ -934,6 +1078,9 @@ ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 1
  822:Drivers/CMSIS/Include/cmsis_gcc.h **** }
  823:Drivers/CMSIS/Include/cmsis_gcc.h **** 
  824:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\cc63py71.s 			page 19
+
+
  825:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
  826:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Store-Release (32 bit)
  827:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Executes a STL instruction for 32 bit values.
@@ -958,9 +1105,6 @@ ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 1
  846:Drivers/CMSIS/Include/cmsis_gcc.h **** 
  847:Drivers/CMSIS/Include/cmsis_gcc.h ****    __ASM volatile ("ldaexb %0, %1" : "=r" (result) : "Q" (*ptr) : "memory" );
  848:Drivers/CMSIS/Include/cmsis_gcc.h ****    return ((uint8_t) result);
-ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 17
-
-
  849:Drivers/CMSIS/Include/cmsis_gcc.h **** }
  850:Drivers/CMSIS/Include/cmsis_gcc.h **** 
  851:Drivers/CMSIS/Include/cmsis_gcc.h **** 
@@ -994,6 +1138,9 @@ ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 1
  879:Drivers/CMSIS/Include/cmsis_gcc.h **** }
  880:Drivers/CMSIS/Include/cmsis_gcc.h **** 
  881:Drivers/CMSIS/Include/cmsis_gcc.h **** 
+ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\cc63py71.s 			page 20
+
+
  882:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
  883:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Store-Release Exclusive (8 bit)
  884:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Executes a STLB exclusive instruction for 8 bit values.
@@ -1018,9 +1165,6 @@ ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 1
  903:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    ptr  Pointer to location
  904:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return          0  Function succeeded
  905:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return          1  Function failed
-ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 18
-
-
  906:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
  907:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE uint32_t __STLEXH(uint16_t value, volatile uint16_t *ptr)
  908:Drivers/CMSIS/Include/cmsis_gcc.h **** {
@@ -1054,6 +1198,9 @@ ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 1
  936:Drivers/CMSIS/Include/cmsis_gcc.h **** 
  937:Drivers/CMSIS/Include/cmsis_gcc.h **** 
  938:Drivers/CMSIS/Include/cmsis_gcc.h **** /* ###########################  Core Function Access  ########################### */
+ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\cc63py71.s 			page 21
+
+
  939:Drivers/CMSIS/Include/cmsis_gcc.h **** /** \ingroup  CMSIS_Core_FunctionInterface
  940:Drivers/CMSIS/Include/cmsis_gcc.h ****     \defgroup CMSIS_Core_RegAccFunctions CMSIS Core Register Access Functions
  941:Drivers/CMSIS/Include/cmsis_gcc.h ****   @{
@@ -1076,34 +1223,44 @@ ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 1
  958:Drivers/CMSIS/Include/cmsis_gcc.h ****            Can only be executed in Privileged modes.
  959:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
  960:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __disable_irq(void)
-  51              		.loc 2 960 27 view .LVU6
-  52              	.LBB7:
-ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 19
-
-
+ 157              		.loc 2 960 27 view .LVU27
+ 158              	.LBB7:
  961:Drivers/CMSIS/Include/cmsis_gcc.h **** {
  962:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("cpsid i" : : : "memory");
-  53              		.loc 2 962 3 view .LVU7
-  54              		.syntax unified
-  55              	@ 962 "Drivers/CMSIS/Include/cmsis_gcc.h" 1
-  56 0008 72B6     		cpsid i
-  57              	@ 0 "" 2
-  58              		.thumb
-  59              		.syntax unified
-  60              	.LBE7:
-  61              	.LBE6:
-  16:Core/Src/bootloader.c **** 
-  17:Core/Src/bootloader.c **** 
-  18:Core/Src/bootloader.c ****     // Set MSP
-  19:Core/Src/bootloader.c ****     __set_MSP(appStack);
-  62              		.loc 1 19 5 view .LVU8
-  63              	.LVL2:
-  64              	.LBB8:
-  65              	.LBI8:
+ 159              		.loc 2 962 3 view .LVU28
+ 160              		.syntax unified
+ 161              	@ 962 "Drivers/CMSIS/Include/cmsis_gcc.h" 1
+ 162 0008 72B6     		cpsid i
+ 163              	@ 0 "" 2
+ 164              		.thumb
+ 165              		.syntax unified
+ 166              	.LBE7:
+ 167              	.LBE6:
+  46:Core/Src/bootloader.c ****     HAL_DeInit();
+ 168              		.loc 1 46 5 view .LVU29
+ 169 000a FFF7FEFF 		bl	HAL_DeInit
+ 170              	.LVL8:
+  47:Core/Src/bootloader.c **** 
+  48:Core/Src/bootloader.c **** 
+  49:Core/Src/bootloader.c **** 
+  50:Core/Src/bootloader.c ****     // Set MSP
+  51:Core/Src/bootloader.c ****     SCB->VTOR = 0x08004000;
+ 171              		.loc 1 51 5 view .LVU30
+ 172              		.loc 1 51 15 is_stmt 0 view .LVU31
+ 173 000e 054B     		ldr	r3, .L16+4
+ 174 0010 9D60     		str	r5, [r3, #8]
+  52:Core/Src/bootloader.c ****     __set_MSP(appStack);
+ 175              		.loc 1 52 5 is_stmt 1 view .LVU32
+ 176              	.LVL9:
+ 177              	.LBB8:
+ 178              	.LBI8:
  963:Drivers/CMSIS/Include/cmsis_gcc.h **** }
  964:Drivers/CMSIS/Include/cmsis_gcc.h **** 
  965:Drivers/CMSIS/Include/cmsis_gcc.h **** 
  966:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
+ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\cc63py71.s 			page 22
+
+
  967:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Get Control Register
  968:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Returns the content of the Control Register.
  969:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return               Control Register value
@@ -1138,9 +1295,6 @@ ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 1
  998:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Writes the given value to the Control Register.
  999:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    control  Control Register value to set
 1000:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
-ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 20
-
-
 1001:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __set_CONTROL(uint32_t control)
 1002:Drivers/CMSIS/Include/cmsis_gcc.h **** {
 1003:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("MSR control, %0" : : "r" (control) : "memory");
@@ -1164,6 +1318,9 @@ ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 1
 1021:Drivers/CMSIS/Include/cmsis_gcc.h **** 
 1022:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
 1023:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Get IPSR Register
+ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\cc63py71.s 			page 23
+
+
 1024:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Returns the content of the IPSR Register.
 1025:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return               IPSR Register value
 1026:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
@@ -1198,9 +1355,6 @@ ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 1
 1055:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE uint32_t __get_xPSR(void)
 1056:Drivers/CMSIS/Include/cmsis_gcc.h **** {
 1057:Drivers/CMSIS/Include/cmsis_gcc.h ****   uint32_t result;
-ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 21
-
-
 1058:Drivers/CMSIS/Include/cmsis_gcc.h **** 
 1059:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("MRS %0, xpsr" : "=r" (result) );
 1060:Drivers/CMSIS/Include/cmsis_gcc.h ****   return(result);
@@ -1224,6 +1378,9 @@ ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 1
 1078:Drivers/CMSIS/Include/cmsis_gcc.h **** #if (defined (__ARM_FEATURE_CMSE ) && (__ARM_FEATURE_CMSE == 3))
 1079:Drivers/CMSIS/Include/cmsis_gcc.h **** /**
 1080:Drivers/CMSIS/Include/cmsis_gcc.h ****   \brief   Get Process Stack Pointer (non-secure)
+ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\cc63py71.s 			page 24
+
+
 1081:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Returns the current value of the non-secure Process Stack Pointer (PSP) when in secure s
 1082:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return               PSP Register value
 1083:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
@@ -1258,9 +1415,6 @@ ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 1
 1112:Drivers/CMSIS/Include/cmsis_gcc.h **** {
 1113:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("MSR psp_ns, %0" : : "r" (topOfProcStack) : );
 1114:Drivers/CMSIS/Include/cmsis_gcc.h **** }
-ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 22
-
-
 1115:Drivers/CMSIS/Include/cmsis_gcc.h **** #endif
 1116:Drivers/CMSIS/Include/cmsis_gcc.h **** 
 1117:Drivers/CMSIS/Include/cmsis_gcc.h **** 
@@ -1284,6 +1438,9 @@ ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 1
 1135:Drivers/CMSIS/Include/cmsis_gcc.h ****   \details Returns the current value of the non-secure Main Stack Pointer (MSP) when in secure stat
 1136:Drivers/CMSIS/Include/cmsis_gcc.h ****   \return               MSP Register value
 1137:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
+ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\cc63py71.s 			page 25
+
+
 1138:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE uint32_t __TZ_get_MSP_NS(void)
 1139:Drivers/CMSIS/Include/cmsis_gcc.h **** {
 1140:Drivers/CMSIS/Include/cmsis_gcc.h ****   uint32_t result;
@@ -1300,52 +1457,72 @@ ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 1
 1151:Drivers/CMSIS/Include/cmsis_gcc.h ****   \param [in]    topOfMainStack  Main Stack Pointer value to set
 1152:Drivers/CMSIS/Include/cmsis_gcc.h ****  */
 1153:Drivers/CMSIS/Include/cmsis_gcc.h **** __STATIC_FORCEINLINE void __set_MSP(uint32_t topOfMainStack)
-  66              		.loc 2 1153 27 view .LVU9
-  67              	.LBB9:
+ 179              		.loc 2 1153 27 view .LVU33
+ 180              	.LBB9:
 1154:Drivers/CMSIS/Include/cmsis_gcc.h **** {
 1155:Drivers/CMSIS/Include/cmsis_gcc.h ****   __ASM volatile ("MSR msp, %0" : : "r" (topOfMainStack) : );
-  68              		.loc 2 1155 3 view .LVU10
-  69              		.syntax unified
-  70              	@ 1155 "Drivers/CMSIS/Include/cmsis_gcc.h" 1
-  71 000a 82F30888 		MSR msp, r2
-  72              	@ 0 "" 2
-  73              	.LVL3:
-  74              		.loc 2 1155 3 is_stmt 0 view .LVU11
-  75              		.thumb
-  76              		.syntax unified
-  77              	.LBE9:
-  78              	.LBE8:
-  20:Core/Src/bootloader.c **** 
-  21:Core/Src/bootloader.c ****     // Jump
-  22:Core/Src/bootloader.c ****     void (*app_entry)(void) = (void*)appReset;
-ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 23
+ 181              		.loc 2 1155 3 view .LVU34
+ 182              		.syntax unified
+ 183              	@ 1155 "Drivers/CMSIS/Include/cmsis_gcc.h" 1
+ 184 0012 86F30888 		MSR msp, r6
+ 185              	@ 0 "" 2
+ 186              	.LVL10:
+ 187              		.loc 2 1155 3 is_stmt 0 view .LVU35
+ 188              		.thumb
+ 189              		.syntax unified
+ 190              	.LBE9:
+ 191              	.LBE8:
+  53:Core/Src/bootloader.c **** 
+  54:Core/Src/bootloader.c ****     // Jump
+  55:Core/Src/bootloader.c ****     void (*app_entry)(void) = (void*)(appReset | 1);
+ 192              		.loc 1 55 5 is_stmt 1 view .LVU36
+ 193              		.loc 1 55 48 is_stmt 0 view .LVU37
+ 194 0016 44F00104 		orr	r4, r4, #1
+ 195              	.LVL11:
+  56:Core/Src/bootloader.c ****     app_entry();
+ 196              		.loc 1 56 5 is_stmt 1 view .LVU38
+ 197 001a A047     		blx	r4
+ 198              	.LVL12:
+  57:Core/Src/bootloader.c **** }...
+ 199              		.loc 1 57 1 is_stmt 0 view .LVU39
+ 200 001c 70BD     		pop	{r4, r5, r6, pc}
+ 201              	.LVL13:
+ 202              	.L17:
+ 203              		.loc 1 57 1 view .LVU40
+ 204 001e 00BF     		.align	2
+ 205              	.L16:
+ 206 0020 00400008 		.word	134234112
+ 207 0024 00ED00E0 		.word	-536810240
+ 208              		.cfi_endproc
+ 209              	.LFE136:
+ 211              		.text
+ 212              	.Letext0:
+ 213              		.file 3 "C:/xpack/xpack-arm-none-eabi-gcc-15.2.1-1.1-win32-x64/xpack-arm-none-eabi-gcc-15.2.1-1.1/
+ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\cc63py71.s 			page 26
 
 
-  79              		.loc 1 22 5 is_stmt 1 view .LVU12
-  23:Core/Src/bootloader.c ****     app_entry();
-  80              		.loc 1 23 5 view .LVU13
-  81 000e 9847     		blx	r3
-  82              	.LVL4:
-  24:Core/Src/bootloader.c **** }...
-  83              		.loc 1 24 1 is_stmt 0 view .LVU14
-  84 0010 08BD     		pop	{r3, pc}
-  85              	.L4:
-  86 0012 00BF     		.align	2
-  87              	.L3:
-  88 0014 00400008 		.word	134234112
-  89              		.cfi_endproc
-  90              	.LFE134:
-  92              		.text
-  93              	.Letext0:
-  94              		.file 3 "C:/xpack/xpack-arm-none-eabi-gcc-15.2.1-1.1-win32-x64/xpack-arm-none-eabi-gcc-15.2.1-1.1/
-  95              		.file 4 "C:/xpack/xpack-arm-none-eabi-gcc-15.2.1-1.1-win32-x64/xpack-arm-none-eabi-gcc-15.2.1-1.1/
-ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s 			page 24
+ 214              		.file 4 "C:/xpack/xpack-arm-none-eabi-gcc-15.2.1-1.1-win32-x64/xpack-arm-none-eabi-gcc-15.2.1-1.1/
+ 215              		.file 5 "Drivers/CMSIS/Include/core_cm4.h"
+ 216              		.file 6 "Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f401xc.h"
+ 217              		.file 7 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h"
+ 218              		.file 8 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_gpio.h"
+ 219              		.file 9 "Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h"
+ARM GAS  C:\Users\KARTHI~1\AppData\Local\Temp\cc63py71.s 			page 27
 
 
 DEFINED SYMBOLS
                             *ABS*:00000000 bootloader.c
-C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s:21     .text.jump_to_app:00000000 $t
-C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s:27     .text.jump_to_app:00000000 jump_to_app
-C:\Users\KARTHI~1\AppData\Local\Temp\ccnsM0RM.s:88     .text.jump_to_app:00000014 $d
+C:\Users\KARTHI~1\AppData\Local\Temp\cc63py71.s:21     .text.is_button_pressed:00000000 $t
+C:\Users\KARTHI~1\AppData\Local\Temp\cc63py71.s:27     .text.is_button_pressed:00000000 is_button_pressed
+C:\Users\KARTHI~1\AppData\Local\Temp\cc63py71.s:79     .text.is_button_pressed:00000038 $d
+C:\Users\KARTHI~1\AppData\Local\Temp\cc63py71.s:84     .text.is_app_valid:00000000 $t
+C:\Users\KARTHI~1\AppData\Local\Temp\cc63py71.s:90     .text.is_app_valid:00000000 is_app_valid
+C:\Users\KARTHI~1\AppData\Local\Temp\cc63py71.s:120    .text.is_app_valid:00000018 $d
+C:\Users\KARTHI~1\AppData\Local\Temp\cc63py71.s:125    .text.jump_to_app:00000000 $t
+C:\Users\KARTHI~1\AppData\Local\Temp\cc63py71.s:131    .text.jump_to_app:00000000 jump_to_app
+C:\Users\KARTHI~1\AppData\Local\Temp\cc63py71.s:206    .text.jump_to_app:00000020 $d
 
-NO UNDEFINED SYMBOLS
+UNDEFINED SYMBOLS
+HAL_Delay
+HAL_GPIO_ReadPin
+HAL_DeInit
